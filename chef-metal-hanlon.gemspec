@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md', 'LICENSE' ]
   s.summary = 'Provisioner for creating hanlon containers in Chef Metal.'
   s.description = s.summary
-  s.author = 'Tom Duffield'
-  s.email = 'tom@getchef.com'
+  s.author = 'John Ewart'
+  s.email = 'jewart@getchef.com'
   s.homepage = 'https://github.com/opscode/chef-metal-hanlon'
 
   s.add_dependency 'chef'
