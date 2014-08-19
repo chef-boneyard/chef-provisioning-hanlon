@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.version = ChefMetalHanlon::VERSION
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ['README.md', 'LICENSE' ]
-  s.summary = 'Provisioner for creating hanlon containers in Chef Metal.'
+  s.summary = 'Provisioner for creating hanlon PXE policies and models with Chef Metal.'
   s.description = s.summary
   s.author = 'John Ewart'
   s.email = 'jewart@getchef.com'
