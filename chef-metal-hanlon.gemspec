@@ -1,19 +1,19 @@
 $:.unshift(File.dirname(__FILE__) + '/lib')
-require 'chef_metal_hanlon/version'
+require 'chef/provisioning/hanlon_driver/version'
 
 Gem::Specification.new do |s|
-  s.name = 'chef-metal-hanlon'
-  s.version = ChefMetalHanlon::VERSION
+  s.name = 'chef-provisioning-hanlon'
+  s.version = Chef::Provisioning::HanlonDriver::VERSION
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ['README.md', 'LICENSE' ]
-  s.summary = 'Provisioner for creating hanlon PXE policies and models with Chef Metal.'
+  s.summary = 'Provisioner for creating hanlon PXE policies and models with Chef Provisioning.'
   s.description = s.summary
   s.author = 'John Ewart'
   s.email = 'jewart@getchef.com'
-  s.homepage = 'https://github.com/opscode/chef-metal-hanlon'
+  s.homepage = 'https://github.com/opscode/chef-provisioning-hanlon'
 
   s.add_dependency 'chef'
-  s.add_dependency 'chef-metal', '~> 0.9'
+  s.add_dependency 'chef-provisioning', '~> 0.9'
   s.add_dependency 'hanlon-api', '~> 0.0'
 
   s.add_development_dependency 'rspec'

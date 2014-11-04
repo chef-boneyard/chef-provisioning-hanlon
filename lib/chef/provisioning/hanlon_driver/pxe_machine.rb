@@ -1,7 +1,9 @@
-require 'chef_metal/machine'
+require 'chef/provisioning/machine'
 
-module ChefMetalHanlon
-  class PxeMachine < ChefMetal::Machine
+class Chef
+module Provisioning
+module HanlonDriver
+  class PxeMachine < Chef::Provisioning::Machine
 
     # PXE booted machines are a bit weird since we really have
     # no control over their booting or not. We have to treat them
@@ -84,4 +86,6 @@ module ChefMetalHanlon
 
 
   end
+end
+end
 end

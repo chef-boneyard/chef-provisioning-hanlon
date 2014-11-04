@@ -1,18 +1,20 @@
 
-require 'chef_metal/driver'
-require 'chef_metal/machine/unix_machine'
+require 'chef/provisioning/driver'
+require 'chef/provisioning/machine/unix_machine'
 
-require 'chef_metal/convergence_strategy/hanlon_broker'
-require 'chef_metal_hanlon/version'
-require 'chef_metal_hanlon/pxe_machine'
+require 'chef/provisioning/convergence_strategy/hanlon_broker'
+require 'chef/provisioning/hanlon_driver/version'
+require 'chef/provisioning/hanlon_driver/pxe_machine'
 
 
 require 'yaml'
 require 'hanlon/api'
 
-module ChefMetalHanlon
+class Chef
+module Provisioning
+module HanlonDriver
   # Provisions machines using Hanlon
-  class HanlonDriver < ChefMetal::Driver
+  class HanlonDriver < Chef::Provisioning::Driver
 
     attr_reader :connection
     attr_reader :hanlon_url
@@ -53,7 +55,7 @@ module ChefMetalHanlon
       # TODO: policy information
       machine_spec.location = {
           'driver_url' => driver_url,
-          'driver_version' => ChefMetalHanlon::VERSION,
+          'driver_version' => Chef::Provisioning::HanlonDriver::VERSION,
           'allocated_at' => Time.now.utc.to_s,
           'host_node' => action_handler.host_node,
       }
@@ -74,7 +76,7 @@ module ChefMetalHanlon
 
 
 
-   
+
     def allocate_image(action_handler, image_spec, image_options, machine_spec)
       raise 'Nope.'
     end
@@ -105,7 +107,7 @@ module ChefMetalHanlon
     end
 
     def machine_for(machine_spec, machine_options)
-      ChefMetalHanlon::PxeMachine.new(machine_spec,
+      Chef::Provisioning::HanlonDriver::PxeMachine.new(machine_spec,
                                       convergence_strategy_for(machine_spec, machine_options))
     end
 
@@ -115,10 +117,12 @@ module ChefMetalHanlon
 
     def convergence_strategy_for(machine_spec, machine_options)
       @hanlon_broker_strategy ||= begin
-        ChefMetal::ConvergenceStrategy::HanlonBroker.
+        Chef::Provisioning::ConvergenceStrategy::HanlonBroker.
             new(machine_options, machine_spec, config)
       end
     end
 
   end
+end
+end
 end

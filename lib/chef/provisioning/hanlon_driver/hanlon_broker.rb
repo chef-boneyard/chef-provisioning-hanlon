@@ -1,13 +1,13 @@
-require 'chef_metal/convergence_strategy/precreate_chef_objects'
+require 'chef/provisioning/convergence_strategy/precreate_chef_objects'
 require 'pathname'
 require 'fileutils'
 require 'digest/md5'
 require 'thread'
 require 'hanlon/api'
 
-module ChefMetal
+module Chef::Provisioning
   class ConvergenceStrategy
-    class HanlonBroker < ConvergenceStrategy
+    class HanlonBroker < Chef::Provisioning::ConvergenceStrategy
 
       # convergence_options is a hash of setup convergence_options, including:
       # - :chef_server
@@ -77,7 +77,7 @@ module ChefMetal
         _convergence_options = convergence_options
         _chef_server = chef_server
         # Save the node and create the client keys and client.
-        ChefMetal.inline_resource(action_handler) do
+        Chef::Provisioning.inline_resource(action_handler) do
           # Create client
           chef_client machine.name do
             chef_server _chef_server
@@ -107,7 +107,7 @@ module ChefMetal
         server_private_key = nil
 
         _convergence_options = convergence_options
-        ChefMetal.inline_resource(action_handler) do
+        Chef::Provisioning.inline_resource(action_handler) do
           private_key 'in_memory' do
             path :none
             if _convergence_options[:private_key_options]
@@ -148,7 +148,7 @@ module ChefMetal
 
       def find_or_create_hanlon_broker(node_name, client_keys)
         client_pem = client_keys.to_pem
-        broker_name = "chef_metal_broker_#{node_name}"
+        broker_name = "chef/provisioning_broker_#{node_name}"
 
         Hanlon::Api::Broker.list.each do |broker_uuid|
           b = Hanlon::Api::Broker.find(broker_uuid)
@@ -161,8 +161,8 @@ module ChefMetal
 
         Hanlon::Api::Broker::ChefMetal.create({
                                        :name => broker_name,
-                                       :plugin => 'chef_metal',
-                                       :description => 'Chef Metal Broker \m/',
+                                       :plugin => 'chef/provisioning',
+                                       :description => 'Chef Provisioning Broker \m/',
                                    }, {
                                        :user_description => 'Install Chef',
                                        :chef_server_url => @chef_server_url,
