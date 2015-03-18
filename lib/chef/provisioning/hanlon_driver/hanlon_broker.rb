@@ -48,17 +48,10 @@ module Chef::Provisioning
         client_keys = generate_keys(action_handler)
         create_chef_objects(action_handler, machine, client_keys)
 
-        # make sure the model exists
-        model = find_or_create_hanlon_model(@machine_options)
-        Chef::Log.debug "Using model #{model.inspect}"
-
         # make sure the broker exists
         #broker = find_or_create_hanlon_broker(node_name, client_keys)
         #Chef::Log.debug "Using broker #{broker.inspect}"
 
-        # Check to see if the policy exists
-        policy = find_or_create_hanlon_policy(node_name, @machine_options, model)# , broker)
-        Chef::Log.info "Using policy #{policy.inspect}"
       end
 
       def converge(action_handler, machine)
@@ -122,30 +115,6 @@ module Chef::Provisioning
         server_private_key
       end
 
-      def find_or_create_hanlon_policy(node_name, machine_options, model)#, broker)
-        # TODO -- this is not the best key but works for now.
-        policy_label = "#{machine_options[:policy][:label_prefix]} - #{node_name}"
-        Hanlon::Api::Policy.list.each do |policy_uuid|
-          p = Hanlon::Api::Policy.find(policy_uuid)
-          if p.label == policy_label
-            return p
-          end
-        end
-
-        Chef::Log.debug "No policy! Creating '#{policy_label}'"
-
-        Hanlon::Api::Policy.create({
-                                       label: policy_label,
-                                       model_uuid: model.uuid,
-#                                       broker_uuid: broker.uuid,
-                                       template: machine_options[:policy][:template],
-                                       tags: machine_options[:policy][:tags],
-                                       enabled: true,
-                                       maximum: 1
-                                   })
-
-      end
-
       def find_or_create_hanlon_broker(node_name, client_keys)
         client_pem = client_keys.to_pem
         broker_name = "chef/provisioning_broker_#{node_name}"
@@ -174,29 +143,6 @@ module Chef::Provisioning
                                        :chef_client_path => 'chef-client',
                                    })
 
-      end
-
-      def find_or_create_hanlon_model(machine_options)
-        Hanlon::Api::Model.list.each do |model_uuid|
-          m = Hanlon::Api::Model.find(model_uuid)
-          puts "Comparing #{m.label} to #{machine_options[:model][:label]}..."
-          if m.label == machine_options[:model][:label]
-            return m
-          end
-        end
-
-        Chef::Log.debug 'No valid model found, creating!'
-
-        Hanlon::Api::Model.create({
-                                      label: machine_options[:model][:label],
-                                      template: machine_options[:model][:template],
-                                      image_uuid: machine_options[:image_uuid],
-                                      req_metadata_params: {},
-                                  }, {
-                                      hostname_prefix: machine_options[:model][:hostname_prefix],
-                                      domainname: machine_options[:model][:domainname],
-                                      root_password: machine_options[:model][:root_password]
-                                  })
       end
 
 
