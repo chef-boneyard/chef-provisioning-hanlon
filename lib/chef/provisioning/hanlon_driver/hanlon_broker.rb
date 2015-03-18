@@ -53,12 +53,12 @@ module Chef::Provisioning
         Chef::Log.debug "Using model #{model.inspect}"
 
         # make sure the broker exists
-        broker = find_or_create_hanlon_broker(node_name, client_keys)
-        Chef::Log.debug "Using broker #{broker.inspect}"
+        #broker = find_or_create_hanlon_broker(node_name, client_keys)
+        #Chef::Log.debug "Using broker #{broker.inspect}"
 
         # Check to see if the policy exists
-        policy = find_or_create_hanlon_policy(node_name, @machine_options, model, broker)
-        Chef::Log.debug "Using policy #{policy.inspect}"
+        policy = find_or_create_hanlon_policy(node_name, @machine_options, model)# , broker)
+        Chef::Log.info "Using policy #{policy.inspect}"
       end
 
       def converge(action_handler, machine)
@@ -122,7 +122,7 @@ module Chef::Provisioning
         server_private_key
       end
 
-      def find_or_create_hanlon_policy(node_name, machine_options, model, broker)
+      def find_or_create_hanlon_policy(node_name, machine_options, model)#, broker)
         # TODO -- this is not the best key but works for now.
         policy_label = "#{machine_options[:policy][:label_prefix]} - #{node_name}"
         Hanlon::Api::Policy.list.each do |policy_uuid|
@@ -137,7 +137,7 @@ module Chef::Provisioning
         Hanlon::Api::Policy.create({
                                        label: policy_label,
                                        model_uuid: model.uuid,
-                                       broker_uuid: broker.uuid,
+#                                       broker_uuid: broker.uuid,
                                        template: machine_options[:policy][:template],
                                        tags: machine_options[:policy][:tags],
                                        enabled: true,
@@ -163,6 +163,7 @@ module Chef::Provisioning
                                        :name => broker_name,
                                        :plugin => 'chef/provisioning',
                                        :description => 'Chef Provisioning Broker \m/',
+                                       
                                    }, {
                                        :user_description => 'Install Chef',
                                        :chef_server_url => @chef_server_url,
@@ -189,7 +190,8 @@ module Chef::Provisioning
         Hanlon::Api::Model.create({
                                       label: machine_options[:model][:label],
                                       template: machine_options[:model][:template],
-                                      image_uuid: machine_options[:image_uuid]
+                                      image_uuid: machine_options[:image_uuid],
+                                      req_metadata_params: {},
                                   }, {
                                       hostname_prefix: machine_options[:model][:hostname_prefix],
                                       domainname: machine_options[:model][:domainname],

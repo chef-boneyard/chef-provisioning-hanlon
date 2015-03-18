@@ -2,7 +2,7 @@
 require 'chef/provisioning/driver'
 require 'chef/provisioning/machine/unix_machine'
 
-require 'chef/provisioning/convergence_strategy/hanlon_broker'
+require 'chef/provisioning/hanlon_driver/hanlon_broker'
 require 'chef/provisioning/hanlon_driver/version'
 require 'chef/provisioning/hanlon_driver/pxe_machine'
 
