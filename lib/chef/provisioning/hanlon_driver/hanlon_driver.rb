@@ -5,6 +5,7 @@ require 'chef/provisioning/machine/unix_machine'
 require 'chef/provisioning/hanlon_driver/hanlon_broker'
 require 'chef/provisioning/hanlon_driver/version'
 require 'chef/provisioning/hanlon_driver/pxe_machine'
+require 'chef/provisioning/hanlon_driver/recipe_dsl'
 
 
 require 'yaml'
@@ -51,53 +52,41 @@ module HanlonDriver
     end
 
 
-    def find_or_create_hanlon_policy(node_name, machine_options, model)#, broker)
-      # TODO -- this is not the best key but works for now.
-      policy_label = "#{machine_options[:policy][:label_prefix]} - #{node_name}"
-      Hanlon::Api::Policy.list.each do |policy_uuid|
-        p = Hanlon::Api::Policy.find(policy_uuid)
-        if p.label == policy_label
-          return p
-        end
-      end
-      
-      Chef::Log.debug "No policy! Creating '#{policy_label}'"
-      
-      Hanlon::Api::Policy.create({
-                                   label: policy_label,
-                                   model_uuid: model.uuid,
-                                   #                                       broker_uuid: broker.uuid,
-                                   template: machine_options[:policy][:template],
-                                   tags: machine_options[:policy][:tags],
-                                   enabled: true,
-                                       maximum: 1
-                                 })
-      
-    end
-    
     def find_or_create_hanlon_model(machine_options)
-      Hanlon::Api::Model.list.each do |model_uuid|
-        m = Hanlon::Api::Model.find(model_uuid)
-        puts "Comparing #{m.label} to #{machine_options[:model][:label]}..."
-        if m.label == machine_options[:model][:label]
-          return m
-        end
-      end
-      
-      Chef::Log.debug 'No valid model found, creating!'
-      
-      Hanlon::Api::Model.create({
-                                  label: machine_options[:model][:label],
-                                  template: machine_options[:model][:template],
-                                  image_uuid: machine_options[:image_uuid],
-                                  req_metadata_params: {},
-                                }, {
-                                  hostname_prefix: machine_options[:model][:hostname_prefix],
-                                  domainname: machine_options[:model][:domainname],
-                                  root_password: machine_options[:model][:root_password]
-                                })
+      model_options=machine_options[:model]
+      match=Hanlon::Api::Model.filter('label',model_options[:label])
+      return match.first if match
+      Chef::Log.debug "No model! Creating '#{model_options[:label]}'"
+
+      Hanlon::Api::Model.create(model_options)
+      # {
+      #                             label: machine_options[:model][:label],
+      #                             template: machine_options[:model][:template],
+      #                             image_uuid: machine_options[:image_uuid],
+      #                             req_metadata_params: {},
+      #                           }, {
+      #                             hostname_prefix: machine_options[:model][:hostname_prefix],
+      #                             domainname: machine_options[:model][:domainname],
+      #                             root_password: machine_options[:model][:root_password]
+      #                           })
     end
 
+    def find_or_create_hanlon_policy(node_name, machine_options, model) #, broker)
+      # TODO -- this is not the best key but works for now.
+      policy_options=machine_options[:policy]
+      policy_label = "#{policy_options[:label_prefix]} - #{node_name}"
+      match=Hanlon::Api::Policy.filter('label',policy_label)
+      return match.first if match
+      Chef::Log.debug "No policy! Creating '#{policy_label}'"
+      
+      Hanlon::Api::Policy.create(policy_options.merge({
+                                   label: policy_label,
+                                   model_uuid: model.uuid,
+                                   enabled: true,
+                                   maximum: 1
+                                 })
+    end
+    
     def allocate_machine(action_handler, machine_spec, machine_options)
       # fail if image non-existant
       image = Hanlon::Api::Image.find(machine_options[:image_uuid])
@@ -106,20 +95,26 @@ module HanlonDriver
       end
       Chef::Log.debug "Using image #{image.inspect}"
 
-      # ensure the model exists
-      model = find_or_create_hanlon_model(@machine_options)
+      model = find_or_create_hanlon_model(machine_options)
       Chef::Log.debug "Using model #{model.inspect}"
 
-      # ensure policy exists
-      policy = find_or_create_hanlon_policy(node_name, @machine_options, model)# , broker)
+      policy = find_or_create_hanlon_policy(node_name, machine_options, model)
       Chef::Log.info "Using policy #{policy.inspect}"
 
-      # we should save the policy somewhere
+      # at this point we have requested a policy=>model=>image binding
+      # with a max count of matching one node based on the policy tags
+      # match an available machine running hanlon mk, it will be bound
+      # and start the provisioning process, for now without a broker
+      # We will store the policy, because for now we don't know what
+      # node we will be given
       machine_spec.location = {
           'driver_url' => driver_url,
           'driver_version' => Chef::Provisioning::HanlonDriver::VERSION,
           'allocated_at' => Time.now.utc.to_s,
           'host_node' => action_handler.host_node,
+          'policy_uuid' => policy.uuid,
+          'image_uuid' => image.uuid,
+          'model_uuid' => model.uuid
       }
     end
 
