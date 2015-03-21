@@ -1,4 +1,3 @@
-
 require 'chef/provisioning/driver'
 require 'chef/provisioning/machine/unix_machine'
 
@@ -80,11 +79,12 @@ module HanlonDriver
       Chef::Log.debug "No policy! Creating '#{policy_label}'"
       
       Hanlon::Api::Policy.create(policy_options.merge({
-                                   label: policy_label,
-                                   model_uuid: model.uuid,
-                                   enabled: true,
-                                   maximum: 1
-                                 })
+                                                        label: policy_label,
+                                                        model_uuid: model.uuid,
+                                                        enabled: true,
+                                                        maximum: 1
+                                                      })
+                                )
     end
     
     def allocate_machine(action_handler, machine_spec, machine_options)
