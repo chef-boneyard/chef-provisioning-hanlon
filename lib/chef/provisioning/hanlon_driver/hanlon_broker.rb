@@ -30,7 +30,7 @@ module Chef::Provisioning
         @chef_version ||= convergence_options[:chef_version]
         # TODO: take this from @chef_server instead - not yet though.
         @chef_server_url = convergence_options[:chef_server_url]
-        @install_sh_url = convergence_options[:install_sh_url] || 'http://opscode.com/chef/install.sh'
+        @install_sh_url = convergence_options[:install_sh_url] || 'https://www.chef.io/chef/install.sh'
         @machine_options = machine_options
         puts "CONVERGENCE_OPTIONS: #{convergence_options.inspect}"
         puts "CONFIG: #{config.inspect}"
