@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.summary = 'Provisioner for creating hanlon PXE policies and models with Chef Provisioning.'
   s.description = s.summary
   s.author = 'John Ewart'
-  s.email = 'jewart@getchef.com'
-  s.homepage = 'https://github.com/opscode/chef-provisioning-hanlon'
+  s.email = 'jewart@chef.io'
+  s.homepage = 'https://github.com/chef/chef-provisioning-hanlon'
 
   s.add_dependency 'chef'
   s.add_dependency 'chef-provisioning', '~> 0.9'
