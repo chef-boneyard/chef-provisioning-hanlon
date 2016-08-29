@@ -12,8 +12,10 @@ Gem::Specification.new do |s|
   s.email = 'jewart@chef.io'
   s.homepage = 'https://github.com/chef/chef-provisioning-hanlon'
 
+  s.required_ruby_version = ">= 2.1.9"
+
   s.add_dependency 'chef'
-  s.add_dependency 'chef-provisioning', '~> 0.9'
+  s.add_dependency 'chef-provisioning', '>= 1.0', '< 3.0'
   s.add_dependency 'hanlon-api', '~> 0.0'
 
   s.add_development_dependency 'rspec'
