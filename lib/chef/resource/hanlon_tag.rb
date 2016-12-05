@@ -1,7 +1,7 @@
 require 'chef/provisioning'
 
-class Chef::Resource::HanlonTagrule < Chef::Resource::LWRPBase
-  self.resource_name = 'hanlon_tagrule'
+class Chef::Resource::HanlonTag < Chef::Resource::LWRPBase
+  self.resource_name = 'hanlon_tag'
 
   #def initialize(driver_url, config)
   #  super
@@ -14,7 +14,7 @@ class Chef::Resource::HanlonTagrule < Chef::Resource::LWRPBase
   attribute :driver
   attribute :name, kind_of: String, name_attribute: true, required: true
   attribute :tag, required: true
-  attribute :match, required: true, kind_of: Array
+  # attribute :match, required: true, kind_of: Array
   # matches should have some validation, but this is just to get to an mvp
   def after(&block)
     block ? @after = block : @after

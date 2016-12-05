@@ -11,7 +11,8 @@ class Chef::Provider::HanlonImage < Chef::Provider::LWRPBase
 
   
   def whyrun_supported?
-    true
+    # I think we need a working @current_resource
+    false #true
   end
 
   def nr
@@ -26,9 +27,23 @@ class Chef::Provider::HanlonImage < Chef::Provider::LWRPBase
 
   action :create do
     config_hanlon_api
-    if Hanlon::Api::Image.filter('filename', nr.path) == []
+    #nr, path defaults to name,  but stored images vary based on type...
+    # would be nice to do async call this map function across all images
+    # might be nice to cache this list across the chef-client run as well
+    # maybe in run_state?
+    hi = Hanlon::Api::Image.list.map{|i| Hanlon::Api::Image.find i}
+    current_image = hi.find do |img|
+      if nr.path
+        nr.path == img.os_name ||
+          nr.path == img.filename
+      else
+        nr.name == img.os_name ||
+          nr.name == img.filename
+      end
+    end
+    if not current_image
       image=Hanlon::Api::Image.create({type: nr.type,
-                                      path: nr.path,
+                                      path: nr.path || nr.name,
                                       description: nr.description,
                                       name: nr.name,
                                       version: nr.version})
@@ -38,7 +53,8 @@ class Chef::Provider::HanlonImage < Chef::Provider::LWRPBase
 
   action :delete do
     config_hanlon_api
-    list = Hanlon::Api::Image.filter('filename', nr.path)
+    nr.path ||= nr.name 
+    list = Hanlon::Api::Image.filter('os_name', nr.name)
     if list
       match = list.first
       Hanlon::Api::Image.destroy(match.uuid)
@@ -56,24 +72,34 @@ class Chef::Provider::HanlonImage < Chef::Provider::LWRPBase
     driver.sub('hanlon:','http://')
   end
 
-  # I'm not sure if we need to load the current resource 
-  # until we support updates / changes
-  # def load_current_resource
-  #   @current_resource = Chef::Resource::HanlonImage.new(@new_resource.name)
-  #   config_hanlon_api
-  #   list = Hanlon::Api::Image.filter('filename', nr.path)
-  #   if list
-  #     existing = list.first
-  #     @current_resource.type = existing.path_prefix #maybe... need to find all types
-  #     @current_resource.path = existing.filename
-  #     @current_resource.description = existing.description
-  #     @current_resource.version = existing.os_version
-      
-  #     image=Hanlon::Api::Image.create({type: nr.type ,
-  #                                      path: nr.path,
-  #                                      description: nr.description,
-  #                                      name: nr.name,
-  #                                      version: nr.version})
-  #   end
-  # end
+  def load_current_resource
+    @current_resource = Chef::Resource::HanlonImage.new(nr.name)
+    # #config_hanlon_api
+    # match = Hanlon::Api::Image.filter(
+    #   'os_name', nr.name).first
+    # # only basing searches on os_name and filename
+    # #to_a.select{ |i|
+    # #i.os_version == nr.version}.first
+    # match ||= Hanlon::Api::Image.filter(
+    #   'filename', nr.name).first
+    # #.to_a.select{ |i|
+    # # i.os_version == nr.version}.first
+    # # there seems to be a bug here
+    # if match 
+    #   @current_resource.type match.path_prefix
+    #   # we default path to name, but if we load it when not requested
+    #   # it doesn't match and we set it up again
+    #   if nr.path
+    #     @current_resource.path match.filename
+    #   else
+    #     @current_resource.path nr.path
+    #   end
+    #   @current_resource.description match.description
+    #   # these are different between OS and MK images
+    #   @current_resource.version  match.os_version || match.iso_version
+    #   @current_resource.uuid  match.uuid
+    # end
+    # @current_resource
+    # binding.pry
+  end
 end

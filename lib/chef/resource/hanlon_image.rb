@@ -3,20 +3,16 @@ require 'chef/provisioning'
 class Chef::Resource::HanlonImage < Chef::Resource::LWRPBase
   self.resource_name = 'hanlon_image'
 
-  #def initialize(driver_url, config)
-  #  super
-  #  @driver = run_context.chef_provisioning.current_driver
-  #end
-
   actions :create, :delete, :nothing #, :delete # forthcoming
   default_action :create
 
   attribute :driver
   attribute :name, kind_of: String, name_attribute: true, required: true
   attribute :type, required: true
-  attribute :path, required: true
+  attribute :path, required: false #defaults to name
   attribute :version, required: true
   attribute :description, required: true
+  attribute :uuid
 
   def after(&block)
     block ? @after = block : @after

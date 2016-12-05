@@ -2,7 +2,7 @@ require 'chef/provider/lwrp_base'
 require 'chef/provisioning/hanlon_driver/hanlon_driver'
 require 'pry'
 
-class Chef::Provider::HanlonTagrule < Chef::Provider::LWRPBase
+class Chef::Provider::HanlonTag < Chef::Provider::LWRPBase
   use_inline_resources
 
   def whyrun_supported?
